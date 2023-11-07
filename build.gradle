@@ -20,4 +20,13 @@ sourceSets {
 
 dependencies {
     implementation 'junit:junit:4.12'
+    implementation 'org.sosy-lab:java-smt:4.0.3'
 }
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+sourceCompatibility = '17.PREVIEW'
+targetCompatibility = '17.PREVIEW'
