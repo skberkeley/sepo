@@ -7,9 +7,13 @@ import org.sosy_lab.common.configuration.InvalidConfigurationException;
 import org.sosy_lab.java_smt.SolverContextFactory;
 import org.sosy_lab.java_smt.api.BitvectorFormula;
 import org.sosy_lab.java_smt.api.BitvectorFormulaManager;
+import org.sosy_lab.java_smt.api.BooleanFormula;
+import org.sosy_lab.java_smt.api.BooleanFormulaManager;
 import org.sosy_lab.java_smt.api.Formula;
 import org.sosy_lab.java_smt.api.FormulaManager;
+import org.sosy_lab.java_smt.api.ProverEnvironment;
 import org.sosy_lab.java_smt.api.SolverContext;
+import org.sosy_lab.java_smt.api.SolverException;
 
 public class SMTUtil {
     private static final SolverContext solverContext;
@@ -26,8 +30,9 @@ public class SMTUtil {
 
     private static final FormulaManager formulaManager = solverContext.getFormulaManager();
     private static final BitvectorFormulaManager bvFormulaManager = formulaManager.getBitvectorFormulaManager();
+    private static final BooleanFormulaManager boolFormulaManager = formulaManager.getBooleanFormulaManager();
 
-    static Formula convertExprToJavaSMTFormula(Expr expr) {
+    public static Formula convertExprToJavaSMTFormula(Expr expr) {
         return switch (expr) {
             case Literal literal -> bvFormulaManager.makeBitvector(32, literal.getValue());
             case Symbol symbol -> bvFormulaManager.makeVariable(32, symbol.getName());
@@ -54,5 +59,18 @@ public class SMTUtil {
             }
             default -> throw new IllegalStateException("Unexpected value: " + expr);
         };
+    }
+
+    public static Formula simplifyExpr(Expr expr) throws InterruptedException {
+        return formulaManager.simplify(convertExprToJavaSMTFormula(expr));
+    }
+
+    public static boolean checkFormulasEquiv(Formula f1, Formula f2) throws InterruptedException, SolverException {
+        BooleanFormula constraint = boolFormulaManager.not(
+                bvFormulaManager.equal((BitvectorFormula) f1, (BitvectorFormula) f2)
+        );
+        ProverEnvironment prover = solverContext.newProverEnvironment();
+        prover.addConstraint(constraint);
+        return prover.isUnsat();
     }
 }
