@@ -3,6 +3,7 @@ import expr.BinaryOp;
 import expr.Expr;
 import expr.ExtensionExpr;
 import expr.LiteralExpr;
+import expr.SliceExpr;
 import org.sosy_lab.java_smt.api.SolverException;
 
 import java.util.HashMap;
@@ -29,6 +30,16 @@ public class SymbolicExecutionEngine {
                                 .op(BinaryOp.ADD)
                                 .build()
                 );
+            case ADDIW: {
+                Expr val = BinaryExpr.builder()
+                        .e1(this.state.getRegisters().get(instruction.getRs1()))
+                        .e2(instruction.getImm())
+                        .op(BinaryOp.ADD)
+                        .build();
+                val = SliceExpr.builder().e(val).start(0).end(31).build();
+                val = ExtensionExpr.builder().e(val).extensionLength(Expr.LENGTH - 32).isSigned(true).build();
+                this.state.getRegisters().put(instruction.getRd(), val);
+            }
             case ADD:
                 this.state.getRegisters().put(
                         instruction.getRd(),
@@ -38,6 +49,16 @@ public class SymbolicExecutionEngine {
                                 .op(BinaryOp.ADD)
                                 .build()
                 );
+            case ADDW: {
+                Expr val = BinaryExpr.builder()
+                        .e1(this.state.getRegisters().get(instruction.getRs1()))
+                        .e2(this.state.getRegisters().get(instruction.getRs2()))
+                        .op(BinaryOp.ADD)
+                        .build();
+                val = SliceExpr.builder().e(val).start(0).end(31).build();
+                val = ExtensionExpr.builder().e(val).extensionLength(Expr.LENGTH - 32).isSigned(true).build();
+                this.state.getRegisters().put(instruction.getRd(), val);
+            }
             case SUB:
                 this.state.getRegisters().put(
                         instruction.getRd(),
@@ -47,6 +68,16 @@ public class SymbolicExecutionEngine {
                                 .op(BinaryOp.SUB)
                                 .build()
                 );
+            case SUBW: {
+                Expr val = BinaryExpr.builder()
+                        .e1(this.state.getRegisters().get(instruction.getRs1()))
+                        .e2(this.state.getRegisters().get(instruction.getRs2()))
+                        .op(BinaryOp.SUB)
+                        .build();
+                val = SliceExpr.builder().e(val).start(0).end(31).build();
+                val = ExtensionExpr.builder().e(val).extensionLength(Expr.LENGTH - 32).isSigned(true).build();
+                this.state.getRegisters().put(instruction.getRd(), val);
+            }
             case AND:
                 this.state.getRegisters().put(
                         instruction.getRd(),
@@ -105,61 +136,121 @@ public class SymbolicExecutionEngine {
                 this.state.getRegisters().put(
                         instruction.getRd(),
                         BinaryExpr.builder()
-                                .e1(this.state.getRegisters().get(instruction.getRd()))
+                                .e1(this.state.getRegisters().get(instruction.getRs1()))
                                 .e2(this.state.getRegisters().get(instruction.getRs2()))
                                 .op(BinaryOp.SLL)
                                 .build()
                 );
+            case SLLW: {
+                Expr val = BinaryExpr.builder()
+                        .e1(this.state.getRegisters().get(instruction.getRs1()))
+                        .e2(this.state.getRegisters().get(instruction.getRs2()))
+                        .op(BinaryOp.SLL)
+                        .build();
+                val = SliceExpr.builder().e(val).start(0).end(31).build();
+                val = ExtensionExpr.builder().e(val).extensionLength(Expr.LENGTH - 32).isSigned(true).build();
+                this.state.getRegisters().put(instruction.getRd(), val);
+            }
             case SLLI:
                 this.state.getRegisters().put(
                         instruction.getRd(),
                         BinaryExpr.builder()
-                                .e1(this.state.getRegisters().get(instruction.getRd()))
+                                .e1(this.state.getRegisters().get(instruction.getRs1()))
                                 .e2(instruction.getImm())
                                 .op(BinaryOp.SLL)
                                 .build()
                 );
+            case SLLIW: {
+                Expr val = BinaryExpr.builder()
+                        .e1(this.state.getRegisters().get(instruction.getRs1()))
+                        .e2(instruction.getImm())
+                        .op(BinaryOp.SLL)
+                        .build();
+                val = SliceExpr.builder().e(val).start(0).end(31).build();
+                val = ExtensionExpr.builder().e(val).extensionLength(Expr.LENGTH - 32).isSigned(true).build();
+                this.state.getRegisters().put(instruction.getRd(), val);
+            }
             case SRL:
                 this.state.getRegisters().put(
                         instruction.getRd(),
                         BinaryExpr.builder()
-                                .e1(this.state.getRegisters().get(instruction.getRd()))
+                                .e1(this.state.getRegisters().get(instruction.getRs1()))
                                 .e2(this.state.getRegisters().get(instruction.getRs2()))
                                 .op(BinaryOp.SRL)
                                 .build()
                 );
+            case SRLW: {
+                Expr val = BinaryExpr.builder()
+                        .e1(this.state.getRegisters().get(instruction.getRs1()))
+                        .e2(this.state.getRegisters().get(instruction.getRs2()))
+                        .op(BinaryOp.SRL)
+                        .build();
+                val = SliceExpr.builder().e(val).start(0).end(31).build();
+                val = ExtensionExpr.builder().e(val).extensionLength(Expr.LENGTH - 32).isSigned(true).build();
+                this.state.getRegisters().put(instruction.getRd(), val);
+            }
             case SRLI:
                 this.state.getRegisters().put(
                         instruction.getRd(),
                         BinaryExpr.builder()
-                                .e1(this.state.getRegisters().get(instruction.getRd()))
+                                .e1(this.state.getRegisters().get(instruction.getRs1()))
                                 .e2(instruction.getImm())
                                 .op(BinaryOp.SRL)
                                 .build()
                 );
+            case SRLIW: {
+                Expr val = BinaryExpr.builder()
+                        .e1(this.state.getRegisters().get(instruction.getRs1()))
+                        .e2(instruction.getImm())
+                        .op(BinaryOp.SRL)
+                        .build();
+                val = SliceExpr.builder().e(val).start(0).end(31).build();
+                val = ExtensionExpr.builder().e(val).extensionLength(Expr.LENGTH - 32).isSigned(true).build();
+                this.state.getRegisters().put(instruction.getRd(), val);
+            }
             case SRA:
                 this.state.getRegisters().put(
                         instruction.getRd(),
                         BinaryExpr.builder()
-                                .e1(this.state.getRegisters().get(instruction.getRd()))
+                                .e1(this.state.getRegisters().get(instruction.getRs1()))
                                 .e2(this.state.getRegisters().get(instruction.getRs2()))
                                 .op(BinaryOp.SRA)
                                 .build()
                 );
+            case SRAW: {
+                Expr val = BinaryExpr.builder()
+                        .e1(this.state.getRegisters().get(instruction.getRs1()))
+                        .e2(this.state.getRegisters().get(instruction.getRs2()))
+                        .op(BinaryOp.SRA)
+                        .build();
+                val = SliceExpr.builder().e(val).start(0).end(31).build();
+                val = ExtensionExpr.builder().e(val).extensionLength(Expr.LENGTH - 32).isSigned(true).build();
+                this.state.getRegisters().put(instruction.getRd(), val);
+            }
             case SRAI:
                 this.state.getRegisters().put(
                         instruction.getRd(),
                         BinaryExpr.builder()
-                                .e1(this.state.getRegisters().get(instruction.getRd()))
+                                .e1(this.state.getRegisters().get(instruction.getRs1()))
                                 .e2(instruction.getImm())
                                 .op(BinaryOp.SRA)
                                 .build()
                 );
+            case SRAIW: {
+                Expr val = BinaryExpr.builder()
+                        .e1(this.state.getRegisters().get(instruction.getRs1()))
+                        .e2(instruction.getImm())
+                        .op(BinaryOp.SRA)
+                        .build();
+                val = SliceExpr.builder().e(val).start(0).end(31).build();
+                val = ExtensionExpr.builder().e(val).extensionLength(Expr.LENGTH - 32).isSigned(true).build();
+                this.state.getRegisters().put(instruction.getRd(), val);
+            }
             case SLT:
                 this.state.getRegisters().put(
                         instruction.getRd(),
                         BinaryExpr.builder()
-                                .e1(this.state.getRegisters().get(instruction.getRd()))
+                                .e1(this.state.getRegisters().get(instruction.getRs1()))
                                 .e2(this.state.getRegisters().get(instruction.getRs2()))
                                 .op(BinaryOp.SLT)
                                 .build()
@@ -168,7 +259,7 @@ public class SymbolicExecutionEngine {
                 this.state.getRegisters().put(
                         instruction.getRd(),
                         BinaryExpr.builder()
-                                .e1(this.state.getRegisters().get(instruction.getRd()))
+                                .e1(this.state.getRegisters().get(instruction.getRs1()))
                                 .e2(instruction.getImm())
                                 .op(BinaryOp.SLT)
                                 .build()
@@ -177,7 +268,7 @@ public class SymbolicExecutionEngine {
                 this.state.getRegisters().put(
                         instruction.getRd(),
                         BinaryExpr.builder()
-                                .e1(this.state.getRegisters().get(instruction.getRd()))
+                                .e1(this.state.getRegisters().get(instruction.getRs1()))
                                 .e2(this.state.getRegisters().get(instruction.getRs2()))
                                 .op(BinaryOp.SLTU)
                                 .build()
@@ -186,7 +277,7 @@ public class SymbolicExecutionEngine {
                 this.state.getRegisters().put(
                         instruction.getRd(),
                         BinaryExpr.builder()
-                                .e1(this.state.getRegisters().get(instruction.getRd()))
+                                .e1(this.state.getRegisters().get(instruction.getRs1()))
                                 .e2(instruction.getImm())
                                 .op(BinaryOp.SLTU)
                                 .build()
@@ -223,7 +314,7 @@ public class SymbolicExecutionEngine {
                         .op(BinaryOp.ADD)
                         .build();
                 Expr value = this.state.getMemory().loadHalfWord(address);
-                Expr signExtended = ExtensionExpr.builder().e(value).extensionLength(16).isSigned(true).build();
+                Expr signExtended = ExtensionExpr.builder().e(value).extensionLength(Expr.LENGTH - 16).isSigned(true).build();
                 this.state.getRegisters().put(instruction.getRd(), signExtended);
             }
             case LHU: {
@@ -233,7 +324,7 @@ public class SymbolicExecutionEngine {
                         .op(BinaryOp.ADD)
                         .build();
                 Expr value = this.state.getMemory().loadHalfWord(address);
-                Expr signExtended = ExtensionExpr.builder().e(value).extensionLength(16).isSigned(false).build();
+                Expr signExtended = ExtensionExpr.builder().e(value).extensionLength(Expr.LENGTH - 16).isSigned(false).build();
                 this.state.getRegisters().put(instruction.getRd(), signExtended);
             }
             case LB: {
@@ -243,7 +334,7 @@ public class SymbolicExecutionEngine {
                         .op(BinaryOp.ADD)
                         .build();
                 Expr value = this.state.getMemory().loadByte(address);
-                Expr signExtended = ExtensionExpr.builder().e(value).extensionLength(24).isSigned(true).build();
+                Expr signExtended = ExtensionExpr.builder().e(value).extensionLength(Expr.LENGTH - 8).isSigned(true).build();
                 this.state.getRegisters().put(instruction.getRd(), signExtended);
             }
             case LBU: {
@@ -253,7 +344,7 @@ public class SymbolicExecutionEngine {
                         .op(BinaryOp.ADD)
                         .build();
                 Expr value = this.state.getMemory().loadByte(address);
-                Expr signExtended = ExtensionExpr.builder().e(value).extensionLength(24).isSigned(false).build();
+                Expr signExtended = ExtensionExpr.builder().e(value).extensionLength(Expr.LENGTH - 8).isSigned(false).build();
                 this.state.getRegisters().put(instruction.getRd(), signExtended);
             }
             case SW: {

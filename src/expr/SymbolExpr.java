@@ -17,6 +17,6 @@ public class SymbolExpr implements Expr {
     }
 
     public int getLength() {
-        return 32;
+        return Expr.LENGTH;
     }
 }
