@@ -10,5 +10,12 @@ public enum BinaryOp {
     SRL,
     SRA,
     SLT,
-    SLTU
+    SLTU;
+
+    public boolean isCommutative() {
+        return switch (this) {
+            case ADD, AND, OR, XOR -> true;
+            default -> false;
+        };
+    }
 }

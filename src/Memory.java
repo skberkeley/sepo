@@ -12,7 +12,7 @@ import java.util.HashMap;
 public class Memory {
     HashMap<Formula, Expr> entries;
 
-    Expr load(Expr address) throws InterruptedException, SolverException {
+    public Expr load(Expr address) throws InterruptedException, SolverException {
         if (ExprUtil.isConcrete(address)) {
             Formula simplified = SMTUtil.simplifyExpr(address);
             if (!entries.containsKey(simplified)) {
@@ -31,10 +31,15 @@ public class Memory {
         return entries.get(addressFormula);
     }
 
-    void store(Expr address, Expr value) {
-        // TODO
+    public void store(Expr address, Expr value) throws InterruptedException, SolverException {
+        store(SMTUtil.simplifyExpr(address), value);
     }
-    private void store(Formula address, Expr value) {
-        // TODO
+    private void store(Formula address, Expr value) throws SolverException, InterruptedException {
+        for (Formula key : entries.keySet()) {
+            if (SMTUtil.checkFormulasCouldBeEqual(key, address)) {
+                entries.remove(key);
+            }
+        }
+        entries.put(address, value);
     }
 }

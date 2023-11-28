@@ -1,4 +1,4 @@
-import expr.Literal;
+import expr.LiteralExpr;
 import lombok.Builder;
 
 @lombok.Value
@@ -7,6 +7,6 @@ public class Instruction {
     Register rs1;
     Register rs2;
     Register rd;
-    Literal imm;
+    LiteralExpr imm;
     Opcode opcode;
 }

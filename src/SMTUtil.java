@@ -1,8 +1,9 @@
 import expr.BinaryExpr;
+import expr.ConcatExpr;
 import expr.Expr;
-import expr.Literal;
+import expr.LiteralExpr;
 import expr.SliceExpr;
-import expr.Symbol;
+import expr.SymbolExpr;
 import org.sosy_lab.common.configuration.InvalidConfigurationException;
 import org.sosy_lab.java_smt.SolverContextFactory;
 import org.sosy_lab.java_smt.api.BitvectorFormula;
@@ -34,13 +35,25 @@ public class SMTUtil {
 
     public static Formula convertExprToJavaSMTFormula(Expr expr) {
         return switch (expr) {
-            case Literal literal -> bvFormulaManager.makeBitvector(32, literal.getValue());
-            case Symbol symbol -> bvFormulaManager.makeVariable(32, symbol.getName());
+            case LiteralExpr literalExpr -> bvFormulaManager.makeBitvector(32, literalExpr.getValue());
+            case SymbolExpr symbolExpr -> bvFormulaManager.makeVariable(32, symbolExpr.getName());
             case SliceExpr sliceExpr -> bvFormulaManager.extract(
                     (BitvectorFormula) convertExprToJavaSMTFormula(sliceExpr.getE()),
                     sliceExpr.getEnd(),
                     sliceExpr.getStart()
             );
+            case ConcatExpr concatExpr -> {
+                Formula f = null;
+                for (SliceExpr sliceExpr : concatExpr.getSlices()) {
+                    Formula sliceFormula = convertExprToJavaSMTFormula(sliceExpr);
+                    if (f == null) {
+                        f = sliceFormula;
+                    } else {
+                        f = bvFormulaManager.concat((BitvectorFormula) f, (BitvectorFormula) sliceFormula);
+                    }
+                }
+                yield f;
+            }
             case BinaryExpr binaryExpr -> {
                 BitvectorFormula bve1 = (BitvectorFormula) convertExprToJavaSMTFormula(binaryExpr.getE1());
                 BitvectorFormula bve2 = (BitvectorFormula) convertExprToJavaSMTFormula(binaryExpr.getE2());
@@ -72,5 +85,12 @@ public class SMTUtil {
         ProverEnvironment prover = solverContext.newProverEnvironment();
         prover.addConstraint(constraint);
         return prover.isUnsat();
+    }
+
+    public static boolean checkFormulasCouldBeEqual(Formula f1, Formula f2) throws InterruptedException, SolverException {
+        BooleanFormula constraint = bvFormulaManager.equal((BitvectorFormula) f1, (BitvectorFormula) f2);
+        ProverEnvironment prover = solverContext.newProverEnvironment();
+        prover.addConstraint(constraint);
+        return !prover.isUnsat();
     }
 }
