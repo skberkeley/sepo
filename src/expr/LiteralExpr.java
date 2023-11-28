@@ -15,4 +15,8 @@ public class LiteralExpr implements Expr {
         }
         return false;
     }
+
+    public int getLength() {
+        return 32;
+    }
 }

@@ -32,4 +32,8 @@ public class ConcatExpr implements Expr {
         }
         return false;
     }
+
+    public int getLength() {
+        return slices.stream().mapToInt(SliceExpr::getLength).sum();
+    }
 }

@@ -24,4 +24,9 @@ public class BinaryExpr implements Expr {
         }
         return false;
     }
+
+    public int getLength() {
+        // Defaults to shorter of two lengths of operands
+        return Math.min(e1.getLength(), e2.getLength());
+    }
 }

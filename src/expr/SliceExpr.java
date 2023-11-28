@@ -20,4 +20,8 @@ public class SliceExpr implements Expr {
         }
         return false;
     }
+
+    public int getLength() {
+        return end - start + 1;
+    }
 }

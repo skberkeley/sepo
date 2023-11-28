@@ -15,7 +15,7 @@ public class ExprUtil {
         };
     }
 
-    public static Expr generateSymbol() {
+    public static SymbolExpr generateSymbol() {
         return new SymbolExpr("symbol_" + symbol_counter++);
     }
 
