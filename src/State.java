@@ -8,6 +8,6 @@ import java.util.HashMap;
 @Builder
 public class State {
     private HashMap<Register, Expr> registers;
-    private HashMap<Expr, Expr> memory;
+    private Memory memory;
     private int programCounter;
 }

@@ -86,7 +86,7 @@ public class Memory {
     }
     public void storeHalfWord(Expr address, Expr value) throws SolverException, InterruptedException {
         if (value.getLength() < 16) {
-            throw new IllegalArgumentException("Value to store half word in memory must be at least 32 bits long");
+            throw new IllegalArgumentException("Value to store half word in memory must be at least 16 bits long");
         }
         SliceExpr slice1 = SliceExpr.builder().e(value).start(0).end(7).build();
         SliceExpr slice2 = SliceExpr.builder().e(value).start(8).end(15).build();
@@ -100,7 +100,7 @@ public class Memory {
     }
     public void storeByte(Expr address, Expr value) throws SolverException, InterruptedException {
         if (value.getLength() < 8) {
-            throw new IllegalArgumentException("Value to store byte in memory must be at least 32 bits long");
+            throw new IllegalArgumentException("Value to store byte in memory must be at least 8 bits long");
         }
         SliceExpr slice = SliceExpr.builder().e(value).start(0).end(7).build();
         store(address, slice);

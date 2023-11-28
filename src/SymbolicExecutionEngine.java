@@ -1,6 +1,9 @@
 import expr.BinaryExpr;
 import expr.BinaryOp;
-import expr.Literal;
+import expr.Expr;
+import expr.ExtensionExpr;
+import expr.LiteralExpr;
+import org.sosy_lab.java_smt.api.SolverException;
 
 import java.util.HashMap;
 
@@ -10,12 +13,12 @@ public class SymbolicExecutionEngine {
     public SymbolicExecutionEngine() {
         this.state = State.builder()
                 .registers(new HashMap<>())
-                .memory(new HashMap<>())
+                .memory(Memory.builder().entries(new HashMap<>()).build())
                 .programCounter(0)
                 .build();
     }
 
-    public State processInstruction(Instruction instruction) {
+    public State processInstruction(Instruction instruction) throws SolverException, InterruptedException {
         switch (instruction.getOpcode()) {
             case ADDI:
                 this.state.getRegisters().put(
@@ -198,12 +201,88 @@ public class SymbolicExecutionEngine {
                         instruction.getRd(),
                         BinaryExpr.builder()
                                 .e1(
-                                        Literal.builder().value(this.state.getProgramCounter()).build()
+                                        LiteralExpr.builder().value(this.state.getProgramCounter()).build()
                                 )
                                 .e2(instruction.getImm())
                                 .op(BinaryOp.ADD)
                                 .build()
                 );
+            case LW: {
+                Expr address = BinaryExpr.builder()
+                        .e1(this.state.getRegisters().get(instruction.getRs1()))
+                        .e2(instruction.getImm())
+                        .op(BinaryOp.ADD)
+                        .build();
+                Expr value = this.state.getMemory().loadWord(address);
+                this.state.getRegisters().put(instruction.getRd(), value);
+            }
+            case LH: {
+                Expr address = BinaryExpr.builder()
+                        .e1(this.state.getRegisters().get(instruction.getRs1()))
+                        .e2(instruction.getImm())
+                        .op(BinaryOp.ADD)
+                        .build();
+                Expr value = this.state.getMemory().loadHalfWord(address);
+                Expr signExtended = ExtensionExpr.builder().e(value).extensionLength(16).isSigned(true).build();
+                this.state.getRegisters().put(instruction.getRd(), signExtended);
+            }
+            case LHU: {
+                Expr address = BinaryExpr.builder()
+                        .e1(this.state.getRegisters().get(instruction.getRs1()))
+                        .e2(instruction.getImm())
+                        .op(BinaryOp.ADD)
+                        .build();
+                Expr value = this.state.getMemory().loadHalfWord(address);
+                Expr signExtended = ExtensionExpr.builder().e(value).extensionLength(16).isSigned(false).build();
+                this.state.getRegisters().put(instruction.getRd(), signExtended);
+            }
+            case LB: {
+                Expr address = BinaryExpr.builder()
+                        .e1(this.state.getRegisters().get(instruction.getRs1()))
+                        .e2(instruction.getImm())
+                        .op(BinaryOp.ADD)
+                        .build();
+                Expr value = this.state.getMemory().loadByte(address);
+                Expr signExtended = ExtensionExpr.builder().e(value).extensionLength(24).isSigned(true).build();
+                this.state.getRegisters().put(instruction.getRd(), signExtended);
+            }
+            case LBU: {
+                Expr address = BinaryExpr.builder()
+                        .e1(this.state.getRegisters().get(instruction.getRs1()))
+                        .e2(instruction.getImm())
+                        .op(BinaryOp.ADD)
+                        .build();
+                Expr value = this.state.getMemory().loadByte(address);
+                Expr signExtended = ExtensionExpr.builder().e(value).extensionLength(24).isSigned(false).build();
+                this.state.getRegisters().put(instruction.getRd(), signExtended);
+            }
+            case SW: {
+                Expr address = BinaryExpr.builder()
+                        .e1(this.state.getRegisters().get(instruction.getRs1()))
+                        .e2(instruction.getImm())
+                        .op(BinaryOp.ADD)
+                        .build();
+                Expr value = this.state.getRegisters().get(instruction.getRs2());
+                this.state.getMemory().storeWord(address, value);
+            }
+            case SH: {
+                Expr address = BinaryExpr.builder()
+                        .e1(this.state.getRegisters().get(instruction.getRs1()))
+                        .e2(instruction.getImm())
+                        .op(BinaryOp.ADD)
+                        .build();
+                Expr value = this.state.getRegisters().get(instruction.getRs2());
+                this.state.getMemory().storeHalfWord(address, value);
+            }
+            case SB: {
+                Expr address = BinaryExpr.builder()
+                        .e1(this.state.getRegisters().get(instruction.getRs1()))
+                        .e2(instruction.getImm())
+                        .op(BinaryOp.ADD)
+                        .build();
+                Expr value = this.state.getRegisters().get(instruction.getRs2());
+                this.state.getMemory().storeByte(address, value);
+            }
             case NOP:
                 break;
             case UNKNOWN:

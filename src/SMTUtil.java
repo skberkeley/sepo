@@ -1,6 +1,7 @@
 import expr.BinaryExpr;
 import expr.ConcatExpr;
 import expr.Expr;
+import expr.ExtensionExpr;
 import expr.LiteralExpr;
 import expr.SliceExpr;
 import expr.SymbolExpr;
@@ -69,6 +70,10 @@ public class SMTUtil {
                     case SLT -> bvFormulaManager.lessThan(bve1, bve2, true);
                     case SLTU -> bvFormulaManager.lessThan(bve1, bve2, false);
                 };
+            }
+            case ExtensionExpr extensionExpr -> {
+                BitvectorFormula bv = (BitvectorFormula) convertExprToJavaSMTFormula(extensionExpr.getE());
+                yield bvFormulaManager.extend(bv, extensionExpr.getExtensionLength(), extensionExpr.isSigned());
             }
             default -> throw new IllegalStateException("Unexpected value: " + expr);
         };
