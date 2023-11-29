@@ -1,14 +1,16 @@
-import expr.BinaryExpr;
-import expr.BinaryOp;
-import expr.ConcatExpr;
-import expr.Expr;
-import expr.ExprUtil;
-import expr.ExtensionExpr;
-import expr.LiteralExpr;
-import expr.SliceExpr;
+package engine;
+
+import engine.expr.BinaryExpr;
+import engine.expr.BinaryOp;
+import engine.expr.Expr;
+import engine.expr.ExprUtil;
+import engine.expr.ExtensionExpr;
+import engine.expr.LiteralExpr;
+import engine.expr.SliceExpr;
 import org.sosy_lab.java_smt.api.SolverException;
 
 import java.util.HashMap;
+import java.util.List;
 
 public class SymbolicExecutionEngine {
     private State state;
@@ -21,7 +23,12 @@ public class SymbolicExecutionEngine {
                 .build();
     }
 
-    public State processInstruction(Instruction instruction) throws SolverException, InterruptedException {
+    public List<State> processInstructions(List<Instruction> instructions) {
+        // TODO
+        return List.of();
+    }
+
+    private State processInstruction(Instruction instruction) throws SolverException, InterruptedException {
         switch (instruction.getOpcode()) {
             case ADDI:
                 this.state.getRegisters().put(
