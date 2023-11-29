@@ -56,47 +56,44 @@ public class Memory {
         entries.put(address, value);
     }
 
+    public void storeDoubleWord(Expr address, Expr value) throws SolverException, InterruptedException {
+        if (value.getLength() < 64) {
+            throw new IllegalArgumentException("Value to store word in memory must be at least 32 bits long");
+        }
+        storeWord(address, value);
+        SliceExpr slice = SliceExpr.builder().e(value).start(32).end(63).build();
+        address = BinaryExpr.builder()
+                .e1(address)
+                .e2(LiteralExpr.builder().value(4).build())
+                .op(BinaryOp.ADD)
+                .build();
+        storeWord(address, slice);
+    }
     public void storeWord(Expr address, Expr value) throws SolverException, InterruptedException {
         if (value.getLength() < 32) {
             throw new IllegalArgumentException("Value to store word in memory must be at least 32 bits long");
         }
-        SliceExpr slice1 = SliceExpr.builder().e(value).start(0).end(7).build();
-        SliceExpr slice2 = SliceExpr.builder().e(value).start(8).end(15).build();
-        SliceExpr slice3 = SliceExpr.builder().e(value).start(16).end(23).build();
-        SliceExpr slice4 = SliceExpr.builder().e(value).start(24).end(31).build();
-        store(address, slice1);
+        storeHalfWord(address, value);
+        SliceExpr slice = SliceExpr.builder().e(value).start(16).end(31).build();
         address = BinaryExpr.builder()
                 .e1(address)
-                .e2(LiteralExpr.builder().value(1).build())
+                .e2(LiteralExpr.builder().value(2).build())
                 .op(BinaryOp.ADD)
                 .build();
-        store(address, slice2);
-        address = BinaryExpr.builder()
-                .e1(address)
-                .e2(LiteralExpr.builder().value(1).build())
-                .op(BinaryOp.ADD)
-                .build();
-        store(address, slice3);
-        address = BinaryExpr.builder()
-                .e1(address)
-                .e2(LiteralExpr.builder().value(1).build())
-                .op(BinaryOp.ADD)
-                .build();
-        store(address, slice4);
+        storeHalfWord(address, slice);
     }
     public void storeHalfWord(Expr address, Expr value) throws SolverException, InterruptedException {
         if (value.getLength() < 16) {
             throw new IllegalArgumentException("Value to store half word in memory must be at least 16 bits long");
         }
-        SliceExpr slice1 = SliceExpr.builder().e(value).start(0).end(7).build();
-        SliceExpr slice2 = SliceExpr.builder().e(value).start(8).end(15).build();
-        store(address, slice1);
+        storeByte(address, value);
+        SliceExpr slice = SliceExpr.builder().e(value).start(8).end(15).build();
         address = BinaryExpr.builder()
                 .e1(address)
                 .e2(LiteralExpr.builder().value(1).build())
                 .op(BinaryOp.ADD)
                 .build();
-        store(address, slice2);
+        storeByte(address, slice);
     }
     public void storeByte(Expr address, Expr value) throws SolverException, InterruptedException {
         if (value.getLength() < 8) {
@@ -105,27 +102,29 @@ public class Memory {
         SliceExpr slice = SliceExpr.builder().e(value).start(0).end(7).build();
         store(address, slice);
     }
+    public Expr loadDoubleWord(Expr address) throws InterruptedException, SolverException {
+        SliceExpr[] slices = new SliceExpr[8];
+        for (int i = 0; i < 8; i++) {
+            slices[i] = load(address);
+            address = BinaryExpr.builder()
+                    .e1(address)
+                    .e2(LiteralExpr.builder().value(1).build())
+                    .op(BinaryOp.ADD)
+                    .build();
+        }
+        return ExprUtil.concatenateSlices(slices);
+    }
     public Expr loadWord(Expr address) throws InterruptedException, SolverException {
-        SliceExpr slice1 = load(address);
-        address = BinaryExpr.builder()
-                .e1(address)
-                .e2(LiteralExpr.builder().value(1).build())
-                .op(BinaryOp.ADD)
-                .build();
-        SliceExpr slice2 = load(address);
-        address = BinaryExpr.builder()
-                .e1(address)
-                .e2(LiteralExpr.builder().value(1).build())
-                .op(BinaryOp.ADD)
-                .build();
-        SliceExpr slice3 = load(address);
-        address = BinaryExpr.builder()
-                .e1(address)
-                .e2(LiteralExpr.builder().value(1).build())
-                .op(BinaryOp.ADD)
-                .build();
-        SliceExpr slice4 = load(address);
-        return ExprUtil.concatenateSlices(slice1, slice2, slice3, slice4);
+        SliceExpr[] slices = new SliceExpr[4];
+        for (int i = 0; i < 4; i++) {
+            slices[i] = load(address);
+            address = BinaryExpr.builder()
+                    .e1(address)
+                    .e2(LiteralExpr.builder().value(1).build())
+                    .op(BinaryOp.ADD)
+                    .build();
+        }
+        return ExprUtil.concatenateSlices(slices);
     }
     public Expr loadHalfWord(Expr address) throws InterruptedException, SolverException {
         SliceExpr slice1 = load(address);

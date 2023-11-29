@@ -312,6 +312,15 @@ public class SymbolicExecutionEngine {
                             .build()
                 );
             }
+            case LD: {
+                Expr address = BinaryExpr.builder()
+                        .e1(this.state.getRegisters().get(instruction.getRs1()))
+                        .e2(instruction.getImm())
+                        .op(BinaryOp.ADD)
+                        .build();
+                Expr value = this.state.getMemory().loadDoubleWord(address);
+                this.state.getRegisters().put(instruction.getRd(), value);
+            }
             case LW: {
                 Expr address = BinaryExpr.builder()
                         .e1(this.state.getRegisters().get(instruction.getRs1()))
@@ -319,7 +328,18 @@ public class SymbolicExecutionEngine {
                         .op(BinaryOp.ADD)
                         .build();
                 Expr value = this.state.getMemory().loadWord(address);
-                this.state.getRegisters().put(instruction.getRd(), value);
+                Expr signExtended = ExtensionExpr.builder().e(value).extensionLength(Expr.LENGTH - 32).isSigned(true).build();
+                this.state.getRegisters().put(instruction.getRd(), signExtended);
+            }
+            case LWU: {
+                Expr address = BinaryExpr.builder()
+                        .e1(this.state.getRegisters().get(instruction.getRs1()))
+                        .e2(instruction.getImm())
+                        .op(BinaryOp.ADD)
+                        .build();
+                Expr value = this.state.getMemory().loadHalfWord(address);
+                Expr signExtended = ExtensionExpr.builder().e(value).extensionLength(Expr.LENGTH - 32).isSigned(false).build();
+                this.state.getRegisters().put(instruction.getRd(), signExtended);
             }
             case LH: {
                 Expr address = BinaryExpr.builder()
@@ -360,6 +380,15 @@ public class SymbolicExecutionEngine {
                 Expr value = this.state.getMemory().loadByte(address);
                 Expr signExtended = ExtensionExpr.builder().e(value).extensionLength(Expr.LENGTH - 8).isSigned(false).build();
                 this.state.getRegisters().put(instruction.getRd(), signExtended);
+            }
+            case SD: {
+                Expr address = BinaryExpr.builder()
+                        .e1(this.state.getRegisters().get(instruction.getRs1()))
+                        .e2(instruction.getImm())
+                        .op(BinaryOp.ADD)
+                        .build();
+                Expr value = this.state.getRegisters().get(instruction.getRs2());
+                this.state.getMemory().storeDoubleWord(address, value);
             }
             case SW: {
                 Expr address = BinaryExpr.builder()
