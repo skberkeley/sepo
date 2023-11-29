@@ -1,6 +1,8 @@
 import expr.BinaryExpr;
 import expr.BinaryOp;
+import expr.ConcatExpr;
 import expr.Expr;
+import expr.ExprUtil;
 import expr.ExtensionExpr;
 import expr.LiteralExpr;
 import expr.SliceExpr;
@@ -282,22 +284,34 @@ public class SymbolicExecutionEngine {
                                 .op(BinaryOp.SLTU)
                                 .build()
                 );
-            case LUI:
+            case LUI: {
+                SliceExpr imm = SliceExpr.builder().e(instruction.getImm()).start(0).end(19).build();
+                SliceExpr zeros = SliceExpr.builder().e(LiteralExpr.builder().value(0).build()).start(0).end(11).build();
+                Expr lower32 = ExprUtil.concatenateSlices(imm, zeros);
                 this.state.getRegisters().put(
-                        instruction.getRd(),
-                        instruction.getImm()
+                    instruction.getRd(),
+                    ExtensionExpr.builder().e(lower32).extensionLength(Expr.LENGTH - 32).isSigned(true).build()
                 );
-            case AUIPC:
+            }
+            case AUIPC: {
+                SliceExpr imm = SliceExpr.builder().e(instruction.getImm()).start(0).end(19).build();
+                SliceExpr zeros = SliceExpr.builder().e(LiteralExpr.builder().value(0).build()).start(0).end(11).build();
+                Expr lower32 = ExprUtil.concatenateSlices(imm, zeros);
                 this.state.getRegisters().put(
                         instruction.getRd(),
                         BinaryExpr.builder()
-                                .e1(
-                                        LiteralExpr.builder().value(this.state.getProgramCounter()).build()
-                                )
-                                .e2(instruction.getImm())
-                                .op(BinaryOp.ADD)
-                                .build()
+                            .e1(LiteralExpr.builder().value(this.state.getProgramCounter()).build())
+                            .e2(
+                                ExtensionExpr.builder()
+                                    .e(lower32)
+                                    .extensionLength(Expr.LENGTH - 32)
+                                    .isSigned(true)
+                                    .build()
+                            )
+                            .op(BinaryOp.ADD)
+                            .build()
                 );
+            }
             case LW: {
                 Expr address = BinaryExpr.builder()
                         .e1(this.state.getRegisters().get(instruction.getRs1()))
