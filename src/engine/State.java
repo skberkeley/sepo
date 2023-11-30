@@ -9,7 +9,7 @@ import java.util.HashMap;
 @Data
 @Builder
 public class State {
-    private HashMap<Register, Expr> registers;
+    private HashMap<String, Expr> registers;
     private Memory memory;
     private int programCounter;
 }

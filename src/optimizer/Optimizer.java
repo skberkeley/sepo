@@ -1,6 +1,6 @@
 package optimizer;
 
-import engine.Instruction;
+import instruction.Instruction;
 import engine.State;
 
 import java.util.List;

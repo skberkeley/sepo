@@ -7,6 +7,7 @@ import engine.expr.ExprUtil;
 import engine.expr.ExtensionExpr;
 import engine.expr.LiteralExpr;
 import engine.expr.SliceExpr;
+import instruction.Instruction;
 import org.sosy_lab.java_smt.api.SolverException;
 
 import java.util.HashMap;

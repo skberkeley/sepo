@@ -6,13 +6,17 @@ import java.util.List;
 public class ExprUtil {
     private static int symbol_counter = 0;
     public static boolean isConcrete(Expr expr) {
-        return switch (expr) {
-            case LiteralExpr literalExpr -> true;
-            case SymbolExpr symbolExpr -> false;
-            case SliceExpr sliceExpr -> isConcrete(sliceExpr.getE());
-            case BinaryExpr binaryExpr -> isConcrete(binaryExpr.getE1()) && isConcrete(binaryExpr.getE2());
-            default -> throw new IllegalStateException("Unexpected value: " + expr);
-        };
+        if (expr instanceof LiteralExpr literalExpr) {
+            return true;
+        } else if (expr instanceof SymbolExpr symbolExpr) {
+            return false;
+        } else if (expr instanceof SliceExpr sliceExpr) {
+            return isConcrete(sliceExpr.getE());
+        } else if (expr instanceof BinaryExpr binaryExpr) {
+            return isConcrete(binaryExpr.getE1()) && isConcrete(binaryExpr.getE2());
+        } else {
+            throw new IllegalStateException("Unexpected value: " + expr);
+        }
     }
 
     public static SymbolExpr generateSymbol() {
