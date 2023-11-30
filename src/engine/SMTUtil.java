@@ -25,7 +25,7 @@ public class SMTUtil {
     static {
         try {
             solverContext = SolverContextFactory.createSolverContext(
-                    SolverContextFactory.Solvers.Z3
+                    SolverContextFactory.Solvers.PRINCESS
             );
         } catch (InvalidConfigurationException e) {
             throw new RuntimeException(e);
@@ -38,9 +38,9 @@ public class SMTUtil {
 
     public static Formula convertExprToJavaSMTFormula(Expr expr) {
         if (expr instanceof LiteralExpr literalExpr) {
-            return bvFormulaManager.makeBitvector(32, literalExpr.getValue());
+            return bvFormulaManager.makeBitvector(Expr.LENGTH, literalExpr.getValue());
         } else if (expr instanceof SymbolExpr symbolExpr) {
-            return bvFormulaManager.makeVariable(32, symbolExpr.getName());
+            return bvFormulaManager.makeVariable(Expr.LENGTH, symbolExpr.getName());
         } else if (expr instanceof SliceExpr sliceExpr) {
             return bvFormulaManager.extract(
                     (BitvectorFormula) convertExprToJavaSMTFormula(sliceExpr.getE()),

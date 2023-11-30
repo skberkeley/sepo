@@ -12,7 +12,9 @@ import lombok.Value;
 import org.sosy_lab.java_smt.api.Formula;
 import org.sosy_lab.java_smt.api.SolverException;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 @Builder
 @Value
@@ -50,10 +52,14 @@ public class Memory {
     }
 
     private void store(Formula address, SliceExpr value) throws SolverException, InterruptedException {
+        List<Formula> keysToRemove = new ArrayList<>();
         for (Formula key : entries.keySet()) {
             if (SMTUtil.checkFormulasCouldBeEqual(key, address)) {
-                entries.remove(key);
+                keysToRemove.add(key);
             }
+        }
+        for (Formula key : keysToRemove) {
+             entries.remove(key);
         }
         entries.put(address, value);
     }

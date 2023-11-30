@@ -42,10 +42,40 @@ sourceSets {
 dependencies {
     implementation 'junit:junit:4.12'
     implementation 'org.sosy-lab:java-smt:4.0.3'
-    implementation group: 'org.sosy-lab', name: 'javasmt-solver-z3', version: '4.8.17', classifier: 'com.microsoft.z3', ext: 'jar'
-    implementation group: 'org.sosy-lab', name: 'javasmt-solver-z3', version: '4.8.17', classifier: 'libz3', ext: 'so'
-    implementation group: 'org.sosy-lab', name: 'javasmt-solver-z3', version: '4.8.17', classifier: 'libz3java', ext: 'so'
+
+    implementation group: 'io.github.uuverifiers', name: 'princess_2.13', version: '2021-11-15', ext: 'jar'
 }
+
+configurations {
+    // Use a custom config that inherits all dependencies from runtimeOnly and implementation.
+    // If you want to seperate your dependencies from the JavaSMT ones
+    // simply use it when pulling the dependencies.
+    javaSMTConfig.extendsFrom(runtimeOnly, implementation)
+}
+
+// Copy and rename all JavaSMT dependencies
+// This is necassary as Gradle renames the JavaSMT dependencies, but we need them to have certain names,
+// and they need to be in a specific location for JavaSMT to be found (the easiest ist the same folder)
+// For more information about this look up the sosy-commons loading process
+task copyDependencies(type: Copy) {
+    // Delete old dependencies as they might cause trouble
+    dependsOn 'cleanDownloadedDependencies'
+    from configurations.javaSMTConfig
+    into 'build/dependencies'
+    // Renames the dependencies
+    rename '.*(lib[^-]*)-?.*.so', '$1.so'
+}
+
+// Cleans the dependencies folder
+task cleanDownloadedDependencies(type: Delete) {
+    delete fileTree('build/dependencies')
+}
+
+// Copy the JavaSMT depdendencies before using them, to do this we declare a dependency on the copy task of ours here
+compileJava.dependsOn copyDependencies
+
+// When clean is called we want to delete our copied JavaSMT files
+clean.dependsOn cleanDownloadedDependencies
 
 java {
     toolchain {
