@@ -37,48 +37,48 @@ public class SMTUtil {
     private static final BooleanFormulaManager boolFormulaManager = formulaManager.getBooleanFormulaManager();
 
     public static Formula convertExprToJavaSMTFormula(Expr expr) {
-        return switch (expr) {
-            case LiteralExpr literalExpr -> bvFormulaManager.makeBitvector(32, literalExpr.getValue());
-            case SymbolExpr symbolExpr -> bvFormulaManager.makeVariable(32, symbolExpr.getName());
-            case SliceExpr sliceExpr -> bvFormulaManager.extract(
+        if (expr instanceof LiteralExpr literalExpr) {
+            return bvFormulaManager.makeBitvector(32, literalExpr.getValue());
+        } else if (expr instanceof SymbolExpr symbolExpr) {
+            return bvFormulaManager.makeVariable(32, symbolExpr.getName());
+        } else if (expr instanceof SliceExpr sliceExpr) {
+            return bvFormulaManager.extract(
                     (BitvectorFormula) convertExprToJavaSMTFormula(sliceExpr.getE()),
                     sliceExpr.getEnd(),
                     sliceExpr.getStart()
             );
-            case ConcatExpr concatExpr -> {
-                Formula f = null;
-                for (SliceExpr sliceExpr : concatExpr.getSlices()) {
-                    Formula sliceFormula = convertExprToJavaSMTFormula(sliceExpr);
-                    if (f == null) {
-                        f = sliceFormula;
-                    } else {
-                        f = bvFormulaManager.concat((BitvectorFormula) f, (BitvectorFormula) sliceFormula);
-                    }
+        } else if (expr instanceof ConcatExpr concatExpr) {
+            Formula f = null;
+            for (SliceExpr sliceExpr : concatExpr.getSlices()) {
+                Formula sliceFormula = convertExprToJavaSMTFormula(sliceExpr);
+                if (f == null) {
+                    f = sliceFormula;
+                } else {
+                    f = bvFormulaManager.concat((BitvectorFormula) f, (BitvectorFormula) sliceFormula);
                 }
-                yield f;
             }
-            case BinaryExpr binaryExpr -> {
-                BitvectorFormula bve1 = (BitvectorFormula) convertExprToJavaSMTFormula(binaryExpr.getE1());
-                BitvectorFormula bve2 = (BitvectorFormula) convertExprToJavaSMTFormula(binaryExpr.getE2());
-                yield switch (binaryExpr.getOp()) {
-                    case ADD -> bvFormulaManager.add(bve1, bve2);
-                    case SUB -> bvFormulaManager.subtract(bve1, bve2);
-                    case AND -> bvFormulaManager.and(bve1, bve2);
-                    case OR -> bvFormulaManager.or(bve1, bve2);
-                    case XOR -> bvFormulaManager.xor(bve1, bve2);
-                    case SLL -> bvFormulaManager.shiftLeft(bve1, bve2);
-                    case SRL -> bvFormulaManager.shiftRight(bve1, bve2, false);
-                    case SRA -> bvFormulaManager.shiftRight(bve1, bve2, true);
-                    case SLT -> bvFormulaManager.lessThan(bve1, bve2, true);
-                    case SLTU -> bvFormulaManager.lessThan(bve1, bve2, false);
-                };
-            }
-            case ExtensionExpr extensionExpr -> {
-                BitvectorFormula bv = (BitvectorFormula) convertExprToJavaSMTFormula(extensionExpr.getE());
-                yield bvFormulaManager.extend(bv, extensionExpr.getExtensionLength(), extensionExpr.isSigned());
-            }
-            default -> throw new IllegalStateException("Unexpected value: " + expr);
-        };
+            return f;
+        } else if (expr instanceof BinaryExpr binaryExpr) {
+            BitvectorFormula bve1 = (BitvectorFormula) convertExprToJavaSMTFormula(binaryExpr.getE1());
+            BitvectorFormula bve2 = (BitvectorFormula) convertExprToJavaSMTFormula(binaryExpr.getE2());
+            return switch (binaryExpr.getOp()) {
+                case ADD -> bvFormulaManager.add(bve1, bve2);
+                case SUB -> bvFormulaManager.subtract(bve1, bve2);
+                case AND -> bvFormulaManager.and(bve1, bve2);
+                case OR -> bvFormulaManager.or(bve1, bve2);
+                case XOR -> bvFormulaManager.xor(bve1, bve2);
+                case SLL -> bvFormulaManager.shiftLeft(bve1, bve2);
+                case SRL -> bvFormulaManager.shiftRight(bve1, bve2, false);
+                case SRA -> bvFormulaManager.shiftRight(bve1, bve2, true);
+                case SLT -> bvFormulaManager.lessThan(bve1, bve2, true);
+                case SLTU -> bvFormulaManager.lessThan(bve1, bve2, false);
+            };
+        } else if (expr instanceof ExtensionExpr extensionExpr) {
+            BitvectorFormula bv = (BitvectorFormula) convertExprToJavaSMTFormula(extensionExpr.getE());
+            return bvFormulaManager.extend(bv, extensionExpr.getExtensionLength(), extensionExpr.isSigned());
+        } else {
+            throw new IllegalStateException("Unexpected value: " + expr);
+        }
     }
 
     public static Formula simplifyExpr(Expr expr) throws InterruptedException {

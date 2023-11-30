@@ -14,6 +14,15 @@ public class ExprUtil {
             return isConcrete(sliceExpr.getE());
         } else if (expr instanceof BinaryExpr binaryExpr) {
             return isConcrete(binaryExpr.getE1()) && isConcrete(binaryExpr.getE2());
+        } else if (expr instanceof ConcatExpr concatExpr) {
+            for (SliceExpr sliceExpr : concatExpr.getSlices()) {
+                if (!isConcrete(sliceExpr)) {
+                    return false;
+                }
+            }
+            return true;
+        } else if (expr instanceof ExtensionExpr extensionExpr) {
+            return isConcrete(extensionExpr.getE());
         } else {
             throw new IllegalStateException("Unexpected value: " + expr);
         }

@@ -1,3 +1,5 @@
+import engine.State;
+import engine.SymbolicExecutionEngine;
 import parser.Parser;
 import parser.Segment;
 
@@ -17,6 +19,8 @@ public class SEPO {
         Parser parser = new Parser();
         List<Segment> segments = parser.parse(fileString);
         // get traces
+        SymbolicExecutionEngine engine = new SymbolicExecutionEngine();
+        List<State> trace = engine.processInstructions(segments.get(0).getInstructions());
         System.out.println("hello");
         // optimize
     }

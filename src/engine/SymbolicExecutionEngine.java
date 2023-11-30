@@ -8,8 +8,10 @@ import engine.expr.ExtensionExpr;
 import engine.expr.LiteralExpr;
 import engine.expr.SliceExpr;
 import instruction.Instruction;
+import lombok.Builder;
 import org.sosy_lab.java_smt.api.SolverException;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -17,16 +19,28 @@ public class SymbolicExecutionEngine {
     private State state;
 
     public SymbolicExecutionEngine() {
+        this.state = null;
+    }
+
+    public List<State> processInstructions(List<Instruction> instructions) {
+        // Reset state
         this.state = State.builder()
                 .registers(new HashMap<>())
                 .memory(Memory.builder().entries(new HashMap<>()).build())
                 .programCounter(0)
                 .build();
-    }
-
-    public List<State> processInstructions(List<Instruction> instructions) {
-        // TODO
-        return List.of();
+        // process each instruction
+        List<State> states = new ArrayList<>(instructions.size() + 1);
+        for (Instruction instruction: instructions) {
+            states.add(this.state);
+            try {
+                this.state = this.processInstruction(instruction);
+            } catch (SolverException | InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        states.add(this.state);
+        return states;
     }
 
     private State processInstruction(Instruction instruction) throws SolverException, InterruptedException {
