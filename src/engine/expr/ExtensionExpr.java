@@ -24,4 +24,8 @@ public class ExtensionExpr implements Expr {
         }
         return false;
     }
+
+    public String toString() {
+        return "(" + e.toString() + (this.isSigned ? " sign-" : " ") + "extended by " + extensionLength + " bits)";
+    }
 }

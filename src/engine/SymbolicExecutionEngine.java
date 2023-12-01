@@ -32,14 +32,14 @@ public class SymbolicExecutionEngine {
         // process each instruction
         List<State> states = new ArrayList<>(instructions.size() + 1);
         for (Instruction instruction: instructions) {
-            states.add(this.state);
+            states.add(new State(this.state));
             try {
                 this.state = this.processInstruction(instruction);
             } catch (SolverException | InterruptedException e) {
                 throw new RuntimeException(e);
             }
         }
-        states.add(this.state);
+        states.add(new State(this.state));
         return states;
     }
 

@@ -21,7 +21,7 @@ public class SEPO {
         // get traces
         SymbolicExecutionEngine engine = new SymbolicExecutionEngine();
         List<State> trace = engine.processInstructions(segments.get(0).getInstructions());
-        System.out.println("hello");
+        System.out.println(trace);
         // optimize
     }
 }

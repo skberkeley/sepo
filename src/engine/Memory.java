@@ -1,5 +1,7 @@
 package engine;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import engine.expr.BinaryExpr;
 import engine.expr.BinaryOp;
 import engine.expr.Expr;
@@ -16,13 +18,24 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-@Builder
 @Value
 public class Memory {
     /**
      * Each entry in memory is a slice of length 8 bits. Words are stored across four entries and so on.
      */
     HashMap<Formula, SliceExpr> entries;
+
+    @Builder
+    public Memory(HashMap<Formula, SliceExpr> entries) {
+        this.entries = entries;
+    }
+
+    public Memory(Memory memory) {
+        entries = new HashMap<>();
+        for (Formula address : memory.entries.keySet()) {
+            entries.put(address, memory.entries.get(address));
+        }
+    }
 
     private SliceExpr load(Expr address) throws InterruptedException, SolverException {
         if (ExprUtil.isConcrete(address)) {
@@ -68,40 +81,43 @@ public class Memory {
         if (value.getLength() < 64) {
             throw new IllegalArgumentException("Value to store word in memory must be at least 32 bits long");
         }
-        storeWord(address, value);
-        SliceExpr slice = SliceExpr.builder().e(value).start(32).end(63).build();
-        address = BinaryExpr.builder()
-                .e1(address)
-                .e2(LiteralExpr.builder().value(4).build())
-                .op(BinaryOp.ADD)
-                .build();
-        storeWord(address, slice);
+        for (int i = 0; i < 8; i++) {
+            SliceExpr slice = SliceExpr.builder().e(value).start(i * 8).end(i * 8 + 7).build();
+            Expr sliceAddress = BinaryExpr.builder()
+                    .e1(address)
+                    .e2(LiteralExpr.builder().value(i).build())
+                    .op(BinaryOp.ADD)
+                    .build();
+            store(sliceAddress, slice);
+        }
     }
     public void storeWord(Expr address, Expr value) throws SolverException, InterruptedException {
         if (value.getLength() < 32) {
             throw new IllegalArgumentException("Value to store word in memory must be at least 32 bits long");
         }
-        storeHalfWord(address, value);
-        SliceExpr slice = SliceExpr.builder().e(value).start(16).end(31).build();
-        address = BinaryExpr.builder()
-                .e1(address)
-                .e2(LiteralExpr.builder().value(2).build())
-                .op(BinaryOp.ADD)
-                .build();
-        storeHalfWord(address, slice);
+        for (int i = 0; i < 4; i++) {
+            SliceExpr slice = SliceExpr.builder().e(value).start(i * 8).end(i * 8 + 7).build();
+            Expr sliceAddress = BinaryExpr.builder()
+                    .e1(address)
+                    .e2(LiteralExpr.builder().value(i).build())
+                    .op(BinaryOp.ADD)
+                    .build();
+            store(sliceAddress, slice);
+        }
     }
     public void storeHalfWord(Expr address, Expr value) throws SolverException, InterruptedException {
         if (value.getLength() < 16) {
             throw new IllegalArgumentException("Value to store half word in memory must be at least 16 bits long");
         }
-        storeByte(address, value);
-        SliceExpr slice = SliceExpr.builder().e(value).start(8).end(15).build();
-        address = BinaryExpr.builder()
-                .e1(address)
-                .e2(LiteralExpr.builder().value(1).build())
-                .op(BinaryOp.ADD)
-                .build();
-        storeByte(address, slice);
+        for (int i = 0; i < 2; i++) {
+            SliceExpr slice = SliceExpr.builder().e(value).start(i * 8).end(i * 8 + 7).build();
+            Expr sliceAddress = BinaryExpr.builder()
+                    .e1(address)
+                    .e2(LiteralExpr.builder().value(i).build())
+                    .op(BinaryOp.ADD)
+                    .build();
+            store(sliceAddress, slice);
+        }
     }
     public void storeByte(Expr address, Expr value) throws SolverException, InterruptedException {
         if (value.getLength() < 8) {
@@ -146,5 +162,17 @@ public class Memory {
     }
     public Expr loadByte(Expr address) throws InterruptedException, SolverException {
         return load(address);
+    }
+
+    public JsonElement toJson() {
+        JsonObject obj = new JsonObject();
+        for (Formula address : entries.keySet()) {
+            obj.addProperty(address.toString(), entries.get(address).toString());
+        }
+        return obj;
+    }
+
+    public String toString() {
+        return toJson().toString();
     }
 }

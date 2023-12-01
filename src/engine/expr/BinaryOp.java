@@ -18,4 +18,20 @@ public enum BinaryOp {
             default -> false;
         };
     }
+
+    @Override
+    public String toString() {
+        return switch (this) {
+            case ADD -> "+";
+            case SUB -> "-";
+            case AND -> "&";
+            case OR -> "|";
+            case XOR -> "^";
+            case SLL -> "<<";
+            case SRL -> ">>";
+            case SRA -> ">>>";
+            case SLT -> "<";
+            case SLTU -> "<u";
+        };
+    }
 }

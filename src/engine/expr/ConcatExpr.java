@@ -36,4 +36,16 @@ public class ConcatExpr implements Expr {
     public int getLength() {
         return slices.stream().mapToInt(SliceExpr::getLength).sum();
     }
+
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("([");
+        for (SliceExpr slice : slices) {
+            sb.append(slice.toString());
+            sb.append(", ");
+        }
+        sb.delete(sb.length() - 2, sb.length());
+        sb.append("])");
+        return sb.toString();
+    }
 }

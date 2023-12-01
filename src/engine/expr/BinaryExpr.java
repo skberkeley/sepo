@@ -29,4 +29,8 @@ public class BinaryExpr implements Expr {
         // Defaults to shorter of two lengths of operands
         return Math.min(e1.getLength(), e2.getLength());
     }
+
+    public String toString() {
+        return "(" + e1.toString() + " " + op.toString() + " " + e2.toString() + ")";
+    }
 }

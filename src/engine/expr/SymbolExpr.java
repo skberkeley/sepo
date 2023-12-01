@@ -19,4 +19,8 @@ public class SymbolExpr implements Expr {
     public int getLength() {
         return Expr.LENGTH;
     }
+
+    public String toString() {
+        return name;
+    }
 }

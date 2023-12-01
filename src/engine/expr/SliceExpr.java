@@ -24,4 +24,8 @@ public class SliceExpr implements Expr {
     public int getLength() {
         return end - start + 1;
     }
+
+    public String toString() {
+        return "(" + e.toString() + "[" + start + ":" + end + "]" + ")";
+    }
 }

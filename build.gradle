@@ -42,8 +42,8 @@ sourceSets {
 dependencies {
     implementation 'junit:junit:4.12'
     implementation 'org.sosy-lab:java-smt:4.0.3'
-
     implementation group: 'io.github.uuverifiers', name: 'princess_2.13', version: '2021-11-15', ext: 'jar'
+    implementation 'com.google.code.gson:gson:2.10.1'
 }
 
 configurations {

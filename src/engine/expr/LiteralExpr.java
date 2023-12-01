@@ -19,4 +19,8 @@ public class LiteralExpr implements Expr {
     public int getLength() {
         return Expr.LENGTH;
     }
+
+    public String toString() {
+        return Integer.toString(value);
+    }
 }
