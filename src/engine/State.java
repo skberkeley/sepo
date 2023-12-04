@@ -38,4 +38,8 @@ public class State {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         return gson.toJson(toJson());
     }
+
+    public int hashCode() {
+        return registers.hashCode() ^ memory.hashCode();
+    }
 }

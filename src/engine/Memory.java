@@ -175,4 +175,8 @@ public class Memory {
     public String toString() {
         return toJson().toString();
     }
+
+    public int hashCode() {
+        return entries.hashCode();
+    }
 }

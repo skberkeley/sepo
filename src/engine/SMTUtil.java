@@ -62,7 +62,16 @@ public class SMTUtil {
             BitvectorFormula bve1 = (BitvectorFormula) convertExprToJavaSMTFormula(binaryExpr.getE1());
             BitvectorFormula bve2 = (BitvectorFormula) convertExprToJavaSMTFormula(binaryExpr.getE2());
             return switch (binaryExpr.getOp()) {
-                case ADD -> bvFormulaManager.add(bve1, bve2);
+                case ADD -> {
+                    BitvectorFormula sum;
+                    try {
+                        sum = bvFormulaManager.add(bve1, bve2);
+                    } catch (IllegalArgumentException e) {
+                        System.out.println(binaryExpr);
+                        throw new RuntimeException(e);
+                    }
+                    yield sum;
+                }
                 case SUB -> bvFormulaManager.subtract(bve1, bve2);
                 case AND -> bvFormulaManager.and(bve1, bve2);
                 case OR -> bvFormulaManager.or(bve1, bve2);

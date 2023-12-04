@@ -45,16 +45,27 @@ public class SymbolicExecutionEngine {
 
     private State processInstruction(Instruction instruction) throws SolverException, InterruptedException {
         switch (instruction.getOpcode()) {
-            case ADDI:
+            case ADDI: {
+                Expr imm = instruction.getImm();
+                if (imm.getLength() < Expr.LENGTH) {
+                    imm = ExtensionExpr.builder().e(imm).extensionLength(Expr.LENGTH - imm.getLength()).isSigned(true).build();
+                }
+                Expr sum = BinaryExpr.builder()
+                        .e1(this.state.getRegisters().get(instruction.getRs1()))
+                        .e2(imm)
+                        .op(BinaryOp.ADD)
+                        .build();
+                Expr result = ExtensionExpr.builder()
+                        .e(SliceExpr.builder().e(sum).start(0).end(31).build())
+                        .extensionLength(Expr.LENGTH - 32)
+                        .isSigned(true)
+                        .build();
                 this.state.getRegisters().put(
                         instruction.getRd(),
-                        BinaryExpr.builder()
-                                .e1(this.state.getRegisters().get(instruction.getRs1()))
-                                .e2(instruction.getImm())
-                                .op(BinaryOp.ADD)
-                                .build()
+                        result
                 );
                 break;
+            }
             case ADDIW: {
                 Expr val = BinaryExpr.builder()
                         .e1(this.state.getRegisters().get(instruction.getRs1()))
@@ -335,9 +346,8 @@ public class SymbolicExecutionEngine {
                 );
                 break;
             case LUI: {
-                SliceExpr imm = SliceExpr.builder().e(instruction.getImm()).start(0).end(19).build();
                 SliceExpr zeros = SliceExpr.builder().e(LiteralExpr.builder().value(0).build()).start(0).end(11).build();
-                Expr lower32 = ExprUtil.concatenateSlices(imm, zeros);
+                Expr lower32 = ExprUtil.concatenateSlices((SliceExpr) instruction.getImm(), zeros);
                 this.state.getRegisters().put(
                     instruction.getRd(),
                     ExtensionExpr.builder().e(lower32).extensionLength(Expr.LENGTH - 32).isSigned(true).build()

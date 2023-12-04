@@ -18,9 +18,12 @@ public class ConcatExpr implements Expr {
         for (SliceExpr slice : slices) {
             totalLength += slice.getEnd() - slice.getStart() + 1;
         }
-        if (totalLength > 32) {
-            throw new IllegalArgumentException("Concatenation of expressions would create a value with width" +
-                    " greater than  32 bits");
+        if (totalLength > Expr.LENGTH) {
+            String err = String.format(
+                    "Concatenation of expressions would create a value with width greater than %d bits",
+                    Expr.LENGTH
+            );
+            throw new IllegalArgumentException(err);
         }
         this.slices = slices;
     }

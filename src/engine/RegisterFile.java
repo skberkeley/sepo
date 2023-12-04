@@ -8,9 +8,11 @@ import engine.expr.Expr;
 import engine.expr.ExprUtil;
 import engine.expr.LiteralExpr;
 import lombok.Builder;
+import lombok.Data;
 
 import java.util.HashMap;
 
+@Data
 public class RegisterFile {
     HashMap<String, Expr> registers;
 
@@ -52,5 +54,9 @@ public class RegisterFile {
     public String toString() {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         return gson.toJson(toJson());
+    }
+
+    public int hashCode() {
+        return registers.hashCode();
     }
 }
