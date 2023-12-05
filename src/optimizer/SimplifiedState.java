@@ -10,6 +10,7 @@ import engine.expr.Expr;
 import lombok.Builder;
 import lombok.Data;
 import org.sosy_lab.java_smt.api.Formula;
+import org.sosy_lab.java_smt.api.SolverException;
 
 import java.util.HashMap;
 
@@ -62,5 +63,57 @@ public class SimplifiedState {
     public String toString() {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         return gson.toJson(toJson());
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof SimplifiedState other)) {
+            return false;
+        }
+
+        if (registers.size() != other.registers.size()) {
+            return false;
+        }
+
+        // check each formula in registers is equivalent
+        for (String register : registers.keySet()) {
+            if (register.equals("x0")) {
+                continue;
+            }
+            try {
+                Formula thisValue = registers.get(register);
+                Formula otherValue = other.registers.get(register);
+                if (thisValue.equals(otherValue)) {
+                    continue;
+                }
+                if (otherValue == null || !SMTUtil.checkFormulasEquiv(registers.get(register), otherValue)) {
+                    return false;
+                }
+            } catch (InterruptedException | SolverException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        // check each formula in memory is equivalent
+        if (memory.size() != other.memory.size()) {
+            return false;
+        }
+
+        for (Formula address : memory.keySet()) {
+            try {
+                for (Formula otherAddress : other.memory.keySet()) {
+                    if (SMTUtil.checkFormulasEquiv(address, otherAddress)) {
+                        Formula otherValue = other.memory.get(otherAddress);
+                        if (!SMTUtil.checkFormulasEquiv(memory.get(address), otherValue)) {
+                            return false;
+                        }
+                    }
+                }
+            } catch (InterruptedException | SolverException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        return true;
     }
 }

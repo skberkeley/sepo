@@ -20,15 +20,6 @@ import java.util.stream.IntStream;
 
 public class SEPO {
     public static void main(String[] args) throws IOException {
-        Expr two = BinaryExpr.builder().e1(LiteralExpr.builder().value(1).build()).e2(LiteralExpr.builder().value(1).build()).op(BinaryOp.ADD).build();
-        Formula formula;
-        try {
-            formula = SMTUtil.simplifyExpr(two);
-        } catch (Exception e) {
-            System.out.println("error");
-            throw new RuntimeException(e);
-        }
-
         // parse file
         Path file = FileSystems.getDefault().getPath("assembly", "1.s");
         byte[] fileArray = Files.readAllBytes(file);
@@ -39,15 +30,6 @@ public class SEPO {
         // get traces
         SymbolicExecutionEngine engine = new SymbolicExecutionEngine();
         List<List<State>> traces = segments.stream().map(s -> engine.processInstructions(s.getInstructions())).toList();
-        try {
-            System.out.println(SMTUtil.checkFormulasEquiv(
-                    SMTUtil.convertExprToJavaSMTFormula(traces.get(0).get(4).getRegisters().get("s0")),
-                    SMTUtil.convertExprToJavaSMTFormula(traces.get(0).get(6).getRegisters().get("s0"))
-            ));
-        } catch (Exception e) {
-            System.out.println("error");
-            throw new RuntimeException(e);
-        }
         // optimize
         List<Segment> newSegments = IntStream
                 .range(0, segments.size())

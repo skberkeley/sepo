@@ -22,42 +22,28 @@ public class Optimizer {
     }
 
     private static List<Instruction> eliminateDeadCode(List<Instruction> instructions, List<SimplifiedState> trace) {
-        HashMap<Integer, Integer> hashToFirstIndex = new HashMap<>();
-        HashMap<Integer, Integer> hashToLastIndex = new HashMap<>();
+        int biggestGapStart = -1;
+        int biggestGapEnd = 0;
+
         for (int i = 0; i < trace.size(); i++) {
             SimplifiedState state = trace.get(i);
-            // hash state
-            int hash = state.hashCode();
-            // add to hashToFirstIndex if not already there
-            if (!hashToFirstIndex.containsKey(hash)) {
-                hashToFirstIndex.put(hash, i);
-            } else {
-                // add to hashToLastIndex if in hashToFirstIndex
-                hashToLastIndex.put(hash, i);
+            for (int j = trace.size() - 1; j > i; j--) {
+                if (state.equals(trace.get(j))) {
+                    biggestGapStart = i;
+                    biggestGapEnd = j;
+                    break;
+                }
+            }
+            if (biggestGapStart != -1) {
+                break;
             }
         }
 
-        if (hashToLastIndex.isEmpty()) {
+        // eliminate dead code in between biggestGapStart and biggestGapEnd
+        if (biggestGapStart == -1) {
             return instructions;
         }
-
-        // if a hash occurs more than once, eliminate dead code in between
-        int biggestGapStart = 0;
-        int biggestGapEnd = 0;
-        for (int hash : hashToLastIndex.keySet()) {
-            int firstIndex = hashToFirstIndex.get(hash);
-            int lastIndex = hashToLastIndex.get(hash);
-            if (lastIndex - firstIndex > biggestGapEnd - biggestGapStart) {
-                biggestGapStart = firstIndex;
-                biggestGapEnd = lastIndex;
-            }
-        }
-
-        List<Instruction> newInstructions = removeSublist(instructions, biggestGapStart, biggestGapEnd - 1);
-
-        List<SimplifiedState> newTrace = removeSublist(trace, biggestGapStart, biggestGapEnd);
-
-        return eliminateDeadCode(newInstructions, newTrace);
+        return removeSublist(instructions, biggestGapStart, biggestGapEnd - 1);
     }
 
     private static <T> List<T> removeSublist(List<T> list, int start, int end) {
