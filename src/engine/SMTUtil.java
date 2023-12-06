@@ -15,6 +15,8 @@ import org.sosy_lab.java_smt.api.BooleanFormula;
 import org.sosy_lab.java_smt.api.BooleanFormulaManager;
 import org.sosy_lab.java_smt.api.Formula;
 import org.sosy_lab.java_smt.api.FormulaManager;
+import org.sosy_lab.java_smt.api.FormulaType;
+import org.sosy_lab.java_smt.api.NumeralFormula;
 import org.sosy_lab.java_smt.api.ProverEnvironment;
 import org.sosy_lab.java_smt.api.SolverContext;
 import org.sosy_lab.java_smt.api.SolverException;
@@ -91,22 +93,41 @@ public class SMTUtil {
     }
 
     public static Formula simplifyExpr(Expr expr) throws InterruptedException {
+        Formula f = formulaManager.simplify(convertExprToJavaSMTFormula(expr));
+        if (f instanceof NumeralFormula.IntegerFormula) {
+            return bvFormulaManager.makeBitvector(Expr.LENGTH, (NumeralFormula.IntegerFormula) f);
+        }
         return formulaManager.simplify(convertExprToJavaSMTFormula(expr));
     }
 
     public static boolean checkFormulasEquiv(Formula f1, Formula f2) throws InterruptedException, SolverException {
-        BooleanFormula constraint = boolFormulaManager.not(
-                bvFormulaManager.equal((BitvectorFormula) f1, (BitvectorFormula) f2)
-        );
+        BooleanFormula constraint;
+        try {
+            constraint = boolFormulaManager.not(
+                    bvFormulaManager.equal((BitvectorFormula) f1, (BitvectorFormula) f2)
+            );
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
         ProverEnvironment prover = solverContext.newProverEnvironment();
         prover.addConstraint(constraint);
         return prover.isUnsat();
     }
 
     public static boolean checkFormulasCouldBeEqual(Formula f1, Formula f2) throws InterruptedException, SolverException {
-        BooleanFormula constraint = bvFormulaManager.equal((BitvectorFormula) f1, (BitvectorFormula) f2);
+        BooleanFormula constraint;
+        try {
+            constraint = bvFormulaManager.equal((BitvectorFormula) f1, (BitvectorFormula) f2);
+        } catch (IllegalArgumentException e) {
+            return true;
+        }
         ProverEnvironment prover = solverContext.newProverEnvironment();
         prover.addConstraint(constraint);
-        return !prover.isUnsat();
+        try {
+            return !prover.isUnsat();
+        } catch (SolverException e) {
+            System.out.println("error!");
+            throw new RuntimeException(e);
+        }
     }
 }

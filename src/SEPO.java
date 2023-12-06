@@ -19,9 +19,9 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 public class SEPO {
-    public static void main(String[] args) throws IOException {
+    private static void testProgram(String filename) throws IOException {
         // parse file
-        Path file = FileSystems.getDefault().getPath("assembly", "1.s");
+        Path file = FileSystems.getDefault().getPath("assembly", filename);
         byte[] fileArray = Files.readAllBytes(file);
         String fileString = new String(fileArray);
         // Instantiate parser
@@ -39,6 +39,16 @@ public class SEPO {
                     return Segment.builder().instructions(instructions).prologue(segment.getPrologue()).build();
                 })
                 .toList();
-        System.out.println("done");
+        System.out.printf("Instruction segment lengths for %s:\n", filename);
+        for (int i = 0; i < traces.size(); i++) {
+            System.out.printf("Segment %d: Before: %d, After: %d\n", i, segments.get(i).getInstructions().size(), newSegments.get(i).getInstructions().size());
+        }
+    }
+
+    public static void main(String[] args) throws IOException {
+        testProgram("1.s");
+        testProgram("helloworld.s");
+        testProgram("knucleotide.s");
+        testProgram("nsieve.s");
     }
 }

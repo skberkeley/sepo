@@ -401,7 +401,7 @@ public class SymbolicExecutionEngine {
                         .e2(instruction.getImm())
                         .op(BinaryOp.ADD)
                         .build();
-                Expr value = this.state.getMemory().loadHalfWord(address);
+                Expr value = this.state.getMemory().loadWord(address);
                 Expr signExtended = ExtensionExpr.builder().e(value).extensionLength(Expr.LENGTH - 32).isSigned(false).build();
                 this.state.getRegisters().put(instruction.getRd(), signExtended);
                 break;
